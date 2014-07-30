@@ -22431,6 +22431,8 @@ define('papyrus-cast',[
   console.log(cast);
   console.log(Papyrus);
 
+  $('body').append('<div style="position:absolute;top:0;bottom:0;left:0;right:0;background:black;color:white">TEST</div>');
+
   $(function () {
     new Papyrus('canvas#papyrus');
 
