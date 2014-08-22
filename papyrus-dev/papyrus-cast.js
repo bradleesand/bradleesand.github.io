@@ -22488,6 +22488,8 @@ requirejs([
 
     // handler for the CastMessageBus message event
     messageBus.onMessage = function (event) {
+      console.log('onMessage');
+      console.log(event);
       console.log('Message [' + event.senderId + ']: ' + event.data);
       // TODO use message
       // inform all senders on the CastMessageBus of the incoming message event
