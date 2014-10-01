@@ -23367,12 +23367,18 @@ requirejs([
     // handler for the CastMessageBus message event
     messageBus.onMessage = function (event) {
       console.log('Message [' + event.senderId + ']: ' + event.data);
-      if (_.has(event.data, 'page')) {
-        createPageModel(event.data.page, function (model) {
+      var jsonData = {};
+      try {
+        JSON.parse(event.data);
+      } catch(e) {
+        console.log('Unable to parse event.data as json: ' + e);
+      }
+      if (_.has(jsonData, 'page')) {
+        createPageModel(jsonData.page, function (model) {
           papyrus.setPage(model);
         });
       }
-      if (_.has(event.data, 'view')) {
+      if (_.has(jsonData, 'view')) {
         // TODO
       }
       // TODO use message
