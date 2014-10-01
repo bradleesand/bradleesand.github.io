@@ -23369,7 +23369,7 @@ requirejs([
       console.log('Message [' + event.senderId + ']: ' + event.data);
       var jsonData = {};
       try {
-        JSON.parse(event.data);
+        jsonData = JSON.parse(event.data);
       } catch(e) {
         console.log('Unable to parse event.data as json: ' + e);
       }
