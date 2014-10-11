@@ -23309,7 +23309,39 @@ requirejs([
     var messageBus = castReceiverManager.getCastMessageBus(
       'urn:x-cast:com.steadfastinnovation.android.projectpapyrus');
 
-    var createPageModel = function (senderPage, successCallback) {
+    var createItemModel = function (item, successCallback, errorCallback) {
+      if (_.has(item, 'type') && _.has(itemTypes, item.type)) {
+        var itemModel = new(itemTypes[item.type])({
+          color: item.color,
+          weight: item.weight,
+          rP: _.clone(item.rP, true),
+          bounds: {
+            left: item.rP.x,
+            right: item.rP.x,
+            top: item.rP.y,
+            bottom: item.rP.y
+          }
+        });
+        if (item.type === 'Stroke') {
+          _.each(item.points, function (point) {
+            itemModel.addPapyrusPoint(point);
+          });
+        }
+        if (_.isFunction(successCallback)) {
+          successCallback(itemModel);
+        }
+      } else {
+        if (_.isFunction(errorCallback)) {
+          if (_.has(item, 'type')) {
+            errorCallback('Invalid item type: ' + item.type);
+          } else {
+            errorCallback('Item requires \'type\' field.');
+          }
+        }
+      }
+    };
+
+    var createPageModel = function (senderPage, successCallback, errorCallback) {
       Pages.singleton.create({
         note: null, // TODO
         created: null, // TODO
@@ -23324,32 +23356,27 @@ requirejs([
       }, {
         wait: true,
         success: function (model) {
+          var promises = [];
           _.each(senderPage.items, function (item) {
-            if (_.has(item, 'type') && _.has(itemTypes, item.type)) {
-              var itemModel = new(itemTypes[item.type])({
-                color: item.color,
-                weight: item.weight,
-                points: [{
-                  x: 0,
-                  y: 0
-                }],
-                rP: _.clone(item.rP, true),
-                bounds: {
-                  left: item.rP.x,
-                  right: item.rP.x,
-                  top: item.rP.y,
-                  bottom: item.rP.y
-                }
-              });
-              _.each(item.points, function (point) {
-                itemModel.addPapyrusPoint(point);
-              });
-              model.addItem(itemModel, _.noop);
+            promises.push($.Deferred(function(p) {
+              createItemModel(item,
+                function(itemModel) {
+                  model.addItem(itemModel, _.noop);
+                  p.resolve();
+                },
+                p.reject
+              );
+            }));
+          });
+          $.when.apply($, promises).done(function() {
+            if (_.isFunction(successCallback)) {
+              successCallback(model);
+            }
+          }).fail(function() {
+            if (_.isFunction(errorCallback)) {
+              errorCallback();
             }
           });
-          if (_.isFunction(successCallback)) {
-            successCallback(model);
-          }
         }
       });
     };
@@ -23376,6 +23403,11 @@ requirejs([
       if (_.has(jsonData, 'page')) {
         createPageModel(jsonData.page, function (model) {
           papyrus.setPage(model);
+        });
+      }
+      if (_.has(jsonData, 'item')) {
+        createItemModel(jsonData.item, function (model) {
+          papyrus.directAddItem(model);
         });
       }
       if (_.has(jsonData, 'view')) {
