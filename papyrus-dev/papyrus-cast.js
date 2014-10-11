@@ -23407,7 +23407,9 @@ requirejs([
       }
       if (_.has(jsonData, 'item')) {
         createItemModel(jsonData.item, function (model) {
-          papyrus.directAddItem(model);
+          papyrus.page.addItem(model, function() {
+            papyrus.page.trigger('draw:item_added', model);
+          });
         });
       }
       if (_.has(jsonData, 'view')) {
