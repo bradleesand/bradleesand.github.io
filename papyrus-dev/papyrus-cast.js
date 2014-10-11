@@ -20550,7 +20550,7 @@ define('model/stroke',[
         },
 
         draw: function (layer) {
-            var item, points, newstroke, refPoint, prevPoint, convertedPoint;
+            var item, points, newstroke, refPoint, prevPoint;
 
             if (!this.invalidated) {
                 return;
@@ -20562,12 +20562,16 @@ define('model/stroke',[
             newstroke.x = 0;
             newstroke.y = 0;
             refPoint = item.get('rP');
-            prevPoint = refPoint;
-            _.each(points, function (element) {
-                convertedPoint = PapyrusUtil.toCanvasPoint(element, refPoint);
-                newstroke.graphics.beginStroke(item.get('color')).setStrokeStyle(
-                    item.getWeight(), 'round').moveTo(prevPoint.x,
-                    prevPoint.y).lineTo(convertedPoint.x, convertedPoint.y);
+            prevPoint = {
+              x: MathUtils.cmToPx(refPoint.x),
+              y: MathUtils.cmToPx(refPoint.y)
+            };
+            _.each(points, function (point) {
+                var convertedPoint = PapyrusUtil.toCanvasPoint(point, refPoint);
+                newstroke.graphics.beginStroke(item.get('color'))
+                  .setStrokeStyle(item.getWeight(), 'round')
+                  .moveTo(prevPoint.x, prevPoint.y)
+                  .lineTo(convertedPoint.x, convertedPoint.y);
                 prevPoint = convertedPoint;
             });
             item.invalidated = false;
