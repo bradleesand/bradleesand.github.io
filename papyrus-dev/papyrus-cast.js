@@ -20480,15 +20480,18 @@ define('model/stroke',[
     ], function (_, Item, PapyrusUtil, MathUtils) {
     return Item.extend({
         defaults: _.extend({}, Item.prototype.defaults, {
-            points: [{
-                x: 0,
-                y: 0
-        }],
             rP: {
                 x: 0,
                 y: 0
             }
         }),
+
+        initialize: function(options) {
+          this.points = [{
+            x: 0,
+            y: 0
+          }];
+        },
 
         addCanvasPoint: function (p) {
             var points = this.get('points');
@@ -21068,7 +21071,7 @@ define('papyrustools',[
                             points: [{
                                 x: 0,
                                 y: 0
-                        }],
+                            }],
                             rP: {
                                 x: touch.x,
                                 y: touch.y
@@ -23318,6 +23321,10 @@ requirejs([
         var itemModel = new(itemTypes[item.type])({
           color: item.color,
           weight: item.weight,
+          points: [{
+              x: 0,
+              y: 0
+          }],
           rP: _.clone(item.rP, true),
           bounds: {
             left: item.rP.x,
