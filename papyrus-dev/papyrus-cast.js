@@ -20650,7 +20650,7 @@ define('model/ellipse',[
 
             newstroke.x = 0;
             newstroke.y = 0;
-            refPoint = item.get('rP');
+
             newstroke.graphics.clear()
                 .beginStroke(item.get('color'))
                 .setStrokeStyle(item.get('weight'), 'round')
@@ -23255,6 +23255,7 @@ requirejs([
     'model/pages',
     'model/page',
     'model/stroke',
+    'model/ellipse',
     'pagesize',
     'pagedirection',
     'pagestyle',
@@ -23266,6 +23267,7 @@ requirejs([
     Pages,
     Page,
     Stroke,
+    Ellipse,
     PageSize,
     PageDirection,
     PageStyle,
@@ -23273,7 +23275,7 @@ requirejs([
 
   var itemTypes = {
     'Stroke': Stroke,
-    // TODO add rest
+    'Shape': Ellipse
   };
 
   $('body').append('<div style="position:absolute;top:0;right:0;background:black;color:white">TEST</div>');
