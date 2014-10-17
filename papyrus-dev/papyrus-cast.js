@@ -20631,8 +20631,9 @@ define('model/stroke',[
 define('model/ellipse',[
     'lodash',
     'model/item',
-    'util/papyrus'
-    ], function (_, Item, PapyrusUtil) {
+    'util/papyrus',
+    'util/math'
+    ], function (_, Item, PapyrusUtil, MathUtils) {
     return Item.extend({
         defaults: _.extend({}, Item.prototype.defaults, {
             rP: {
