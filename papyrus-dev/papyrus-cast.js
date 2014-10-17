@@ -20653,7 +20653,7 @@ define('model/ellipse',[
 
             newstroke.graphics.clear()
                 .beginStroke(item.get('color'))
-                .setStrokeStyle(item.get('weight'), 'round')
+                .setStrokeStyle(this.getWeight(), 'round')
                 .drawEllipse(refPoint.x, refPoint.y, this.getWidth(),
                     this.getHeight());
             this.invalidated = false;
@@ -20689,6 +20689,10 @@ define('model/ellipse',[
 
             this.translate(pivotX, pivotY);
             this.invalidated = true;
+        },
+
+        getWeight: function () {
+          return MathUtils.cmToPx(this.get('weight'));
         }
     });
 });
