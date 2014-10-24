@@ -20486,13 +20486,6 @@ define('model/stroke',[
             }
         }),
 
-        initialize: function(options) {
-          this.points = [{
-            x: 0,
-            y: 0
-          }];
-        },
-
         addCanvasPoint: function (p) {
             var points = this.get('points');
             this.updateBounds(p);
@@ -23328,22 +23321,12 @@ requirejs([
         var itemModel = new(itemTypes[item.type])({
           color: item.color,
           weight: item.weight,
-          points: [{
-              x: 0,
-              y: 0
-          }],
-          rP: _.clone(item.rP, true),
-          bounds: {
-            left: item.rP.x,
-            right: item.rP.x,
-            top: item.rP.y,
-            bottom: item.rP.y
-          }
+          points: item.points,
+          rP: item.rP,
+          bounds: item.bounds
         });
         if (item.type === 'Stroke') {
-          _.each(item.points, function (point) {
-            itemModel.addPapyrusPoint(point);
-          });
+          itemModel.recalcBounds();
         }
         if (_.isFunction(successCallback)) {
           successCallback(itemModel);
