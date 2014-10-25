@@ -20323,11 +20323,11 @@ define('model/item',[
         },
         getWidth: function () {
             var bounds = this.get('bounds');
-            return bounds.right - bounds.left;
+            return MathUtils.cmToPx(bounds.right) - MathUtils.cmToPx(bounds.left);
         },
         getHeight: function () {
             var bounds = this.get('bounds');
-            return bounds.bottom - bounds.top;
+            return MathUtils.cmToPx(bounds.bottom) - MathUtils.cmToPx(bounds.top);
         },
         sortBounds: function () {
             var temp, bounds = this.get('bounds');
