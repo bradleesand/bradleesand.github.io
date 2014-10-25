@@ -20294,9 +20294,10 @@ define('model/item',[
     'lodash',
     'backbone',
     'util/guid',
+    'util/math',
     // Ignore deps after this point
     'backbone.relational' // This augments backbone and returns empty object
-    ], function (_, Backbone, guid) {
+    ], function (_, Backbone, guid, MathUtils) {
     var Item = Backbone.RelationalModel.extend({
         defaults: {
             color: null,
