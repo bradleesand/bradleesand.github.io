@@ -20435,12 +20435,14 @@ define('util/papyrus',[
 ], function (_, createjs, Text, MathUtils) {
   return {
     toPapyrusPoint: function (point, rP) {
+      rP = rP || {x:0,y:0};
       return {
         x: MathUtils.pxToCm(point.x - rP.x),
         y: MathUtils.pxToCm(point.y - rP.y)
       };
     },
     toCanvasPoint: function (point, rP) {
+      rP = rP || {x:0,y:0};
       return {
         x: MathUtils.cmToPx(point.x + rP.x),
         y: MathUtils.cmToPx(point.y + rP.y)
@@ -20643,7 +20645,7 @@ define('model/ellipse',[
             // to draw partial ellipse if true eraser was used.
             var item = this,
                 newstroke = PapyrusUtil.createStageObject(item, layer),
-                refPoint = MathUtils.cmToPx(item.get('rP'));
+                refPoint = PapyrusUtil.toCanvasPoint(item.get('rP'));
 
             newstroke.x = 0;
             newstroke.y = 0;
@@ -22884,7 +22886,7 @@ define('model/note',[
         getPage: function (pageIndex, onPageLoaded) {
             var note = this,
                 pageIds = note.get('pageIds'),
-                page, pageAdded;
+                page;//, pageAdded;
 
             if (pageIndex >= pageIds.length) {
                 note.shouldCreatePage(pageIndex, function (shouldCreatePage) {
@@ -22971,6 +22973,7 @@ define('model/note',[
                 } else {
                     // Need to fetch the page
                     if (note.isShared()) {
+/* TODO sharing
                         // Get the page from firebase
                         pagesRef.child(pageIds[pageIndex]).once(
                             'value',
@@ -22992,6 +22995,7 @@ define('model/note',[
                                     }
                                 });
                             });
+*/
                     } else {
                         // Get the page from the local store
                         page = new Page({
