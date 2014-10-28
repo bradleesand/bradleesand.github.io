@@ -20639,9 +20639,11 @@ define('model/ellipse',[
             if (!this.invalidated) {
                 return;
             }
+            // TODO Use Papyrus/src/main/java/com/steadfastinnovation/android/projectpapyrus/ui/drawers/EllipseDrawer.java
+            // to draw partial ellipse if true eraser was used.
             var item = this,
                 newstroke = PapyrusUtil.createStageObject(item, layer),
-                refPoint = item.get('rP');
+                refPoint = MathUtils.cmToPx(item.get('rP'));
 
             newstroke.x = 0;
             newstroke.y = 0;
