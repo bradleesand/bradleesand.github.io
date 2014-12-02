@@ -23431,6 +23431,12 @@ requirejs([
       } catch(e) {
         console.log('Unable to parse event.data as json: ' + e);
       }
+      if (_.has(jsonData, 'viewport')) {
+        papyrus.setViewport(jsonData.viewport.top,
+            jsonData.viewport.right,
+            jsonData.viewport.bottom,
+            jsonData.viewport.left);
+      }
       if (_.has(jsonData, 'page')) {
         createPageModel(jsonData.page, function (model) {
           papyrus.setPage(model);
@@ -23443,10 +23449,6 @@ requirejs([
           });
         });
       }
-      if (_.has(jsonData, 'view')) {
-        // TODO
-      }
-      // TODO use message
       // inform all senders on the CastMessageBus of the incoming message event
       // sender message listener will be invoked
       messageBus.send(event.senderId, event.data);
