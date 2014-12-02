@@ -18016,6 +18016,33 @@ define('util/math',['jquery', 'lodash', 'distanceutils'], function ($, _, Distan
     };
 });
 
+define('viewport',[
+  'lodash',
+], function(_) {
+  var Viewport = function() {
+
+  };
+
+  _.extend(Viewport.prototype, {
+    layer: null,
+    top: 0,
+    right: 0,
+    bottom: 0,
+    left: 0,
+    toCanvasPoint: function(p) {
+      var bounds = this.layer.getBounds(),
+          xScale = bounds.width / (this.right - this.left),
+          yScale = bounds.height / (this.bottom - this.top);
+      return {
+        x: xScale * (this.left - p.x),
+        y: yScale * (this.top - p.y)
+      };
+    }
+  });
+
+  return Viewport;
+});
+
 define('pagesize',[], {
     SCREEN_SIZE: {
         disp: 'Screen Size',
@@ -20378,12 +20405,13 @@ define('model/text',[
             },
             text: 'default'
         }),
-        draw: function (layer) {
+        draw: function (viewport) {
             if (!this.invalidated) {
                 return;
             }
 
             var item = this,
+                layer = viewport.layer,
                 textStageObj = PapyrusUtil.createStageObject(item, layer),
                 refPoint = item.get('rP'),
                 width, height, hitShape;
@@ -20441,11 +20469,10 @@ define('util/papyrus',[
         y: MathUtils.pxToCm(point.y - rP.y)
       };
     },
-    toCanvasPoint: function (point, rP) {
-      rP = rP || {x:0,y:0};
+    derefPoint: function (point, rP) {
       return {
-        x: MathUtils.cmToPx(point.x + rP.x),
-        y: MathUtils.cmToPx(point.y + rP.y)
+        x: point.x + rP.x,
+        y: point.y + rP.y
       };
     },
     createStageObject: function (item, layer) {
@@ -20495,12 +20522,6 @@ define('model/stroke',[
             points.push(PapyrusUtil.toPapyrusPoint(p, this.get('rP')));
         },
 
-        addPapyrusPoint: function (p) {
-            var points = this.get('points');
-            this.updateBounds(PapyrusUtil.toCanvasPoint(p, this.get('rP')));
-            points.push(p);
-        },
-
         updateBounds: function (p) {
             var halfWeight = this.getWeight() / 2;
             var bounds = this.get('bounds');
@@ -20544,29 +20565,27 @@ define('model/stroke',[
             points = this.get('points');
             len = points.length;
             for (i = 0; i < len; i++) {
-                this.updateBounds(PapyrusUtil.toCanvasPoint(points[i], rP));
+                this.updateBounds(PapyrusUtil.derefPoint(points[i], rP));
             }
         },
 
-        draw: function (layer) {
-            var item, points, newstroke, refPoint, prevPoint;
+        draw: function (viewport) {
+            var item, points, newstroke, refPoint, prevPoint, layer;
 
             if (!this.invalidated) {
                 return;
             }
             item = this;
+            layer = viewport.layer;
             points = item.get('points');
             newstroke = PapyrusUtil.createStageObject(item, layer);
             newstroke.graphics.clear();
             newstroke.x = 0;
             newstroke.y = 0;
             refPoint = item.get('rP');
-            prevPoint = {
-              x: MathUtils.cmToPx(refPoint.x),
-              y: MathUtils.cmToPx(refPoint.y)
-            };
+            prevPoint = viewport.toCanvasPoint(refPoint);
             _.each(points, function (point) {
-                var convertedPoint = PapyrusUtil.toCanvasPoint(point, refPoint);
+                var convertedPoint = viewport.toCanvasPoint(PapyrusUtil.derefPoint(point, refPoint));
                 newstroke.graphics.beginStroke(item.get('color'))
                   .setStrokeStyle(item.getWeight(), 'round')
                   .moveTo(prevPoint.x, prevPoint.y)
@@ -20637,15 +20656,16 @@ define('model/ellipse',[
                 y: 0
             }
         }),
-        draw: function (layer) {
+        draw: function (viewport) {
             if (!this.invalidated) {
                 return;
             }
             // TODO Use Papyrus/src/main/java/com/steadfastinnovation/android/projectpapyrus/ui/drawers/EllipseDrawer.java
             // to draw partial ellipse if true eraser was used.
             var item = this,
+                layer = viewport.layer,
                 newstroke = PapyrusUtil.createStageObject(item, layer),
-                refPoint = PapyrusUtil.toCanvasPoint(item.get('rP'));
+                refPoint = viewport.toCanvasPoint(item.get('rP'));
 
             newstroke.x = 0;
             newstroke.y = 0;
@@ -21306,7 +21326,7 @@ define('papyrustools',[
                         bounds.right = touch.x;
                         bounds.bottom = touch.y;
                         self.currentItem.invalidated = true;
-                        self.currentItem.draw(self.papyrus.layer);
+                        self.currentItem.draw(self.papyrus.viewport);
 
                         if (!dontUpdate) {
                             self.papyrus.stage.update();
@@ -21616,7 +21636,7 @@ define('papyrustools',[
             for (i = 0; i < pastedItems.length; i++) {
                 item = pastedItems[i].copy();
                 item.translate(dx, dy);
-                item.draw(this.papyrus.layer);
+                item.draw(this.papyrus.viewport);
                 copiedItems.push(item);
             }
             this.papyrus.addItem(copiedItems);
@@ -22089,13 +22109,14 @@ define('papyrus',[
     'lodash',
     'createjs',
     'util/math',
+    'viewport',
     'pagesize',
     'pagestyle',
     'historyitem',
     'papyrustools',
     'util/papyrus',
     'model/text'
-], function ($, _, createjs, MathUtils, PageSize, PageStyle, HistoryItem, PapyrusTools, PapyrusUtil, Text) {
+], function ($, _, createjs, MathUtils, Viewport, PageSize, PageStyle, HistoryItem, PapyrusTools, PapyrusUtil, Text) {
   var Papyrus = function (selector, InputConstructor) {
     var canvasDom;
 
@@ -22103,6 +22124,8 @@ define('papyrus',[
     canvasDom = this.$canvas[0];
 
     this.tools = new PapyrusTools(this);
+
+    this.viewport = new Viewport();
 
     this.stage = new createjs.Stage(canvasDom.id);
     // Throttle all calls to update,
@@ -22121,7 +22144,6 @@ define('papyrus',[
 
   // Member functions (methods)
   _.extend(Papyrus.prototype, {
-    layer: null,
     page: null,
     tool: null,
     panning: false,
@@ -22141,7 +22163,7 @@ define('papyrus',[
       for (i = 0; i < length; i++) {
         item = items.at(i);
         item.invalidated = true;
-        item.draw(this.layer);
+        item.draw(this.viewport);
       }
       this.stage.update();
     },
@@ -22192,9 +22214,9 @@ define('papyrus',[
       this.stage.addChild(backgroundRect);
       this.stage.addChild(backgroundShape);
 
-      this.layer = new createjs.Container();
-      this.layer.mask = backgroundRect;
-      this.stage.addChild(this.layer);
+      this.viewport.layer = new createjs.Container();
+      this.viewport.layer.mask = backgroundRect;
+      this.stage.addChild(this.viewport.layer);
 
       this.toolLayer = new createjs.Container();
       this.toolLayer.mask = backgroundRect;
@@ -22206,35 +22228,42 @@ define('papyrus',[
 
       page.on('draw:item_added', function (item) {
         item.invalidated = true;
-        item.draw(self.layer);
+        item.draw(self.viewport);
         self.stage.update();
       });
       page.on('draw:item_removed', function (item) {
-        var displayIndex = self.layer.getChildIndex(item.stageObj);
+        var displayIndex = self.viewport.layer.getChildIndex(item.stageObj);
         if (displayIndex >= 0) {
           // Only save display index if it's valid
           item.displayIndex = displayIndex;
-          self.layer.removeChildAt(item.displayIndex);
+          self.viewport.layer.removeChildAt(item.displayIndex);
           item.invalidated = true;
           self.stage.update();
         }
       });
       page.on('draw:item_changed', function (item) {
         item.invalidated = true;
-        item.draw(self.layer);
+        item.draw(self.viewport);
         self.stage.update();
       });
     },
 
     setViewport: function (top, right, bottom, left) {
-      var width = MathUtils.cmToPx(right - left),
-        height = MathUtils.cmToPx(bottom - top);
-      this.stage.setTransform(
-        MathUtils.cmToPx(left),
-        MathUtils.cmToPx(top),
-        this.$canvas.width() / width,
-        this.$canvas.height() / height
-      );
+      this.viewport.top = top;
+      this.viewport.right = right;
+      this.viewport.bottom = bottom;
+      this.viewport.left = left;
+
+      this.viewport.layer.removeAllChildren();
+      this.initialDrawPage();
+      // var width = MathUtils.cmToPx(right - left),
+      //   height = MathUtils.cmToPx(bottom - top);
+      // this.stage.setTransform(
+      //   MathUtils.cmToPx(left),
+      //   MathUtils.cmToPx(top),
+      //   this.$canvas.width() / width,
+      //   this.$canvas.height() / height
+      // );
     },
 
     setTool: function (tool) {
@@ -22253,7 +22282,7 @@ define('papyrus',[
     },
 
     createItemLayerStageObject: function (item) {
-      return PapyrusUtil.createStageObject(item, this.layer);
+      return PapyrusUtil.createStageObject(item, this.viewport.layer);
     },
 
     createToolLayerStageObject: function (item) {
@@ -23311,12 +23340,6 @@ requirejs([
       if (castReceiverManager.getSenders().length === 0) {
         window.close();
       }
-    };
-
-    // handler for 'systemvolumechanged' event
-    castReceiverManager.onSystemVolumeChanged = function (event) {
-      console.log('Received System Volume Changed event: ' + event.data.level + ' ' +
-        event.data.muted);
     };
 
     // create a CastMessageBus to handle messages for a custom namespace
