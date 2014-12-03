@@ -22001,6 +22001,8 @@ define('papyrus',[
 
     this.$canvas = $(selector);
     canvasDom = this.$canvas[0];
+    canvasDom.width = this.$canvas.width();
+    canvasDom.height = this.$canvas.height();
 
     this.tools = new PapyrusTools(this);
 
@@ -23196,7 +23198,7 @@ requirejs([
   };
 
   $(function () {
-    var papyrus = null;//new Papyrus('canvas#papyrus');
+    var papyrus = new Papyrus('canvas#papyrus');
 
     cast.receiver.logger.setLevelValue(0);
     var castReceiverManager = cast.receiver.CastReceiverManager.getInstance();
