@@ -23262,13 +23262,11 @@ requirejs([
         note: null, // TODO
         created: null, // TODO
         modified: null, // TODO
-        /* TODO
         background: {
-          direction: null, // TODO
-          pageSize: null, // TODO
-          pageStyle: null // TODO
+          direction: PageDirection.PORTRAIT, // TODO
+          pageSize: PageSize.SCREEN_SIZE, // TODO
+          pageStyle: PageStyle.BLANK // TODO
         }
-        */
       }, {
         wait: true,
         success: function (model) {
