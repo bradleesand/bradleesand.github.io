@@ -22158,14 +22158,16 @@ define('papyrus',[
     initialDrawPage: function () {
       var items, length, i, item;
 
-      items = this.page.get('items');
-      length = items.length;
-      for (i = 0; i < length; i++) {
-        item = items.at(i);
-        item.invalidated = true;
-        item.draw(this.viewport);
+      if (this.page) {
+        items = this.page.get('items');
+        length = items.length;
+        for (i = 0; i < length; i++) {
+          item = items.at(i);
+          item.invalidated = true;
+          item.draw(this.viewport);
+        }
+        this.stage.update();
       }
-      this.stage.update();
     },
 
     setPage: function (page) {
@@ -22254,8 +22256,10 @@ define('papyrus',[
       this.viewport.bottom = bottom;
       this.viewport.left = left;
 
-      this.viewport.layer.removeAllChildren();
-      this.initialDrawPage();
+      if (this.viewport.layer) {
+        this.viewport.layer.removeAllChildren();
+        this.initialDrawPage();
+      }
       // var width = MathUtils.cmToPx(right - left),
       //   height = MathUtils.cmToPx(bottom - top);
       // this.stage.setTransform(
@@ -23312,8 +23316,6 @@ requirejs([
     'Shape': Ellipse
   };
 
-  $('body').append('<div style="position:absolute;top:0;right:0;background:black;color:white">TEST</div>');
-
   $(function () {
     var papyrus = new Papyrus('canvas#papyrus');
     papyrus.setViewport(0, 21.08, 13.59, 0);
@@ -23432,10 +23434,12 @@ requirejs([
         console.log('Unable to parse event.data as json: ' + e);
       }
       if (_.has(jsonData, 'viewport')) {
-        papyrus.setViewport(jsonData.viewport.top,
-            jsonData.viewport.right,
-            jsonData.viewport.bottom,
-            jsonData.viewport.left);
+        papyrus.setViewport(
+          jsonData.viewport.top,
+          jsonData.viewport.right,
+          jsonData.viewport.bottom,
+          jsonData.viewport.left
+        );
       }
       if (_.has(jsonData, 'page')) {
         createPageModel(jsonData.page, function (model) {
