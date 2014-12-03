@@ -23196,8 +23196,7 @@ requirejs([
   };
 
   $(function () {
-    var papyrus = new Papyrus('canvas#papyrus');
-    papyrus.setViewport(0, 21.08, 13.59, 0);
+    var papyrus = null;//new Papyrus('canvas#papyrus');
 
     cast.receiver.logger.setLevelValue(0);
     var castReceiverManager = cast.receiver.CastReceiverManager.getInstance();
