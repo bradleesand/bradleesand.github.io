@@ -18018,7 +18018,8 @@ define('util/math',['jquery', 'lodash', 'distanceutils'], function ($, _, Distan
 
 define('viewport',[
   'lodash',
-], function(_) {
+  'jquery'
+], function(_, $) {
   var Viewport = function() {
 
   };
@@ -18030,9 +18031,9 @@ define('viewport',[
     bottom: 0,
     left: 0,
     toCanvasPoint: function(p) {
-      var bounds = this.layer.getBounds(),
-          xScale = bounds.width / (this.right - this.left),
-          yScale = bounds.height / (this.bottom - this.top);
+      var $canvas = $(this.layer.parent.canvas),
+          xScale = $canvas.width() / (this.right - this.left),
+          yScale = $canvas.height() / (this.bottom - this.top);
       return {
         x: xScale * (this.left - p.x),
         y: yScale * (this.top - p.y)
