@@ -18035,8 +18035,8 @@ define('viewport',[
           xScale = $canvas.width() / (this.right - this.left),
           yScale = $canvas.height() / (this.bottom - this.top);
       return {
-        x: xScale * (this.left - p.x),
-        y: yScale * (this.top - p.y)
+        x: xScale * (p.x - this.left),
+        y: yScale * (p.y - this.top)
       };
     }
   });
