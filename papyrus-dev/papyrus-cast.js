@@ -21997,12 +21997,15 @@ define('papyrus',[
     'model/text'
 ], function ($, _, createjs, MathUtils, Viewport, PageSize, PageStyle, HistoryItem, PapyrusTools, PapyrusUtil, Text) {
   var Papyrus = function (selector, InputConstructor) {
-    var canvasDom;
+    var canvasDom, height, width;
 
     this.$canvas = $(selector);
     canvasDom = this.$canvas[0];
-    canvasDom.width = this.$canvas.width();
-    canvasDom.height = this.$canvas.height();
+
+    height = this.$canvas.height();
+    width = this.$canvas.width();
+    canvasDom.height = height;
+    canvasDom.width = width;
 
     this.tools = new PapyrusTools(this);
 
